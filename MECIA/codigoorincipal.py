@@ -2,16 +2,16 @@ import os
 
 def processar_resposta(pergunta, nome, sintomas_dengue, sintomas_COVID19):
     # Processar sintomas de dengue
-    if "dor de cabeça intença" in pergunta:
+    if "dor de cabeça" in pergunta:
         sintomas_dengue.append("Dor de cabeça intensa")
         print(f'{os.linesep}{nome}, certo, continuaremos os exames. Pode ser que precise só de um remédio.')
-    elif "náuseas e vômito" in pergunta:
+    elif "vomito" in pergunta:
         sintomas_dengue.append("Náuseas e vômito")
         print(f'{os.linesep}{nome}, é preocupante. Beba muita água.')
-    elif "sangramentos leves" in pergunta:
+    elif "sangramentos" in pergunta:
         sintomas_dengue.append("Sangramentos leves")
         print(f'{os.linesep}{nome}, mantenha a cabeça levantada e use um papel para o sangramento.')
-    elif "cansaço extremo" in pergunta:
+    elif "cansaço" in pergunta:
         sintomas_dengue.append("Cansaço extremo")
         print(f'{os.linesep}{nome}, comece a ingerir mais vitaminas, principalmente vitamina C.')
     elif "dor nas articulações" in pergunta:
@@ -22,7 +22,7 @@ def processar_resposta(pergunta, nome, sintomas_dengue, sintomas_COVID19):
     if "dificuldade para respirar" in pergunta:
         sintomas_COVID19.append("Dificuldade para respirar")
         print(f'{os.linesep}{nome}, isso é preocupante. Talvez você precise de atendimento médico.')
-    elif "perda de paladar ou olfato" in pergunta:
+    elif "paladar e do olfato" in pergunta:
         sintomas_COVID19.append("Perda de paladar ou olfato")
         print(f'{os.linesep}{nome}, hidrate-se e alimente-se bem. Mesmo com a perda de paladar, é importante manter uma boa hidratação e alimentação.')
     elif "dor de garganta" in pergunta:
@@ -66,13 +66,13 @@ def start():
             break
 
         # Verificar se deseja continuar ou obter um diagnóstico
-        continuar = input('Deseja continuar descrevendo sintomas? (s/n): ').strip().lower()
-        if continuar != 's':
+        continuar = input('Deseja continuar descrevendo sintomas? ').strip().lower()
+        if continuar != 'sim':
             break
 
     # Diagnóstico final se não tiver diagnosticado antes
     if not diagnostico:
-        print("Você parece estar bem, mas continue monitorando seus sintomas,.")
+        print("Você parece estar com uns sintomas preculpante, mas continue monitorando seus sintomas e passe num clinico geral que ele ira recomendar uns exames e se for necessario um uso de medicamentos.")
 
 if __name__ == '__main__':
     start()

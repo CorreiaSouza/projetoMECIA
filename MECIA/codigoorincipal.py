@@ -1,4 +1,7 @@
 import os
+from flask import flask, request, render_template, redirect, url_for
+
+app = Flask(__name__)
 
 def processar_resposta(pergunta, nome, sintomas_dengue, sintomas_COVID19):
     # Processar sintomas de dengue

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente Médica</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Assistente Médica</h1>
+        <form method="POST">
+            <label for="nome">Digite seu nome:</label>
+            <input type="text" id="nome" name="nome" required>
+            <label for="pergunta">Como está se sentindo:</label>
+            <textarea id="pergunta" name="pergunta" required></textarea>
+            <input type="hidden" name="sintomas_dengue" value="{{ sintomas_dengue }}">
+            <input type="hidden" name="sintomas_COVID19" value="{{ sintomas_COVID19 }}">
+            <button type="submit">Enviar</button>
+        </form>
+        {% if diagnostico %}
+            <div class="diagnostico">
+                <p>{{ diagnostico }}</p>
+            </div>
+        {% endif %}
+    </div>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

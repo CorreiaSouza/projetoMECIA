@@ -1,81 +1,138 @@
 import os
-from flask import flask, request, render_template, redirect, url_for
+import random
+from datetime import datetime, timedelta
 
-app = Flask(__name__)
+# ---------- FUNÇÕES DE APOIO ----------
 
-def processar_resposta(pergunta, nome, sintomas_dengue, sintomas_COVID19):
-    # Processar sintomas de dengue
+def gerar_codigo_paciente() -> str:
+    """Gera um código de 8 dígitos para o paciente."""
+    return f"{random.randint(0, 99999999):08}"
+
+def proxima_consulta() -> datetime:
+    """Agenda para o próximo dia útil às 09 h."""
+    hoje = datetime.now()
+    dia = hoje + timedelta(days=1)
+    # Se cair em sábado(5) ou domingo(6), pula para segunda‑feira
+    while dia.weekday() >= 5:
+        dia += timedelta(days=1)
+    return dia.replace(hour=9, minute=0, second=0, microsecond=0)
+
+# ---------- ANÁLISE DE SINTOMAS ----------
+
+def processar_resposta(pergunta, nome, sintomas_dengue, sintomas_covid):
+    """Atualiza listas de sintomas e imprime orientações imediatas."""
+    # --- Dengue ---
     if "dor de cabeça" in pergunta:
-        sintomas_dengue.append("Dor de cabeça intensa")
-        print(f'{os.linesep}{nome}, certo, continuaremos os exames. Pode ser que precise só de um remédio.')
+        sintomas_dengue.append("Dor de cabeça")
+        print(f'\n{nome}, continuaremos os exames. Pode ser que precise apenas de um analgésico.')
     elif "vomito" in pergunta:
-        sintomas_dengue.append("Náuseas e vômito")
-        print(f'{os.linesep}{nome}, é preocupante. Beba muita água.')
+        sintomas_dengue.extend("vômito", "náusea","enjoos","vomitando")
+        print(f'\n{nome}, isso é preocupante. Beba bastante água.')
     elif "sangramentos" in pergunta:
-        sintomas_dengue.append("Sangramentos leves")
-        print(f'{os.linesep}{nome}, mantenha a cabeça levantada e use um papel para o sangramento.')
+        sintomas_dengue.extend("Sangramentos")
+        print(f'\n{nome}, mantenha a cabeça erguida e pressione o local do sangramento.')
     elif "cansaço" in pergunta:
-        sintomas_dengue.append("Cansaço extremo")
-        print(f'{os.linesep}{nome}, comece a ingerir mais vitaminas, principalmente vitamina C.')
+        sintomas_dengue.extend("Cansaço extremo")
+        print(f'\n{nome}, reforce a ingestão de vitamina C e faça repouso.')
     elif "dor nas articulações" in pergunta:
-        sintomas_dengue.append("Dor nas articulações")
-        print(f'{os.linesep}{nome}, precisa de repouso. Tente se espreguiçar se conseguir.')
+        sintomas_dengue.extend("Dor nas articulações")
+        print(f'\n{nome}, recomendamos repouso e alongamentos suaves.')
 
-    # Processar sintomas de COVID-19
+    # --- COVID‑19 ---
     if "dificuldade para respirar" in pergunta:
-        sintomas_COVID19.append("Dificuldade para respirar")
-        print(f'{os.linesep}{nome}, isso é preocupante. Talvez você precise de atendimento médico.')
+        sintomas_covid.extend("Dificuldade para respirar")
+        print(f'\n{nome}, isso é sério. Procure atendimento médico se piorar.')
     elif "paladar e do olfato" in pergunta:
-        sintomas_COVID19.append("Perda de paladar ou olfato")
-        print(f'{os.linesep}{nome}, hidrate-se e alimente-se bem. Mesmo com a perda de paladar, é importante manter uma boa hidratação e alimentação.')
+        sintomas_covid.extend("Perda de paladar", "Perda de olfato", "Perda de paladar e olfato")
+        print(f'\n{nome}, mantenha boa hidratação e alimentação.')
     elif "dor de garganta" in pergunta:
-        sintomas_COVID19.append("Dor de garganta")
-        print(f'{os.linesep}{nome}, vou recomendar um medicamento para você e beba chá de ervas para relaxar a garganta.')
+        sintomas_covid.extend("Dor de garganta", "Dor de garganta leve", "Dor de garganta intensa", "Tossindo")
+        print(f'\n{nome}, faça gargarejos mornos e descanse a voz.')
     elif "febre ou calafrios" in pergunta:
-        sintomas_COVID19.append("Febre ou calafrios")
-        print(f'{os.linesep}{nome}, descanse bastante para ajudar seu corpo a combater a infecção ou qualquer outra causa subjacente.')
+        sintomas_covid.extend("Febre", "Calafrios")
+        print(f'\n{nome}, descanse bastante e controle a febre com antitérmico se necessário.')
     elif "congestão ou corrimento nasal" in pergunta:
-        sintomas_COVID19.append("Congestão ou corrimento nasal")
-        print(f'{os.linesep}{nome}, recomendo que use um spray nasal salino para hidratar e limpar as passagens nasais. Isso pode ajudar a aliviar a congestão nasal.')
+        sintomas_covid.extend("Congestão nasal", "Corrimento nasal", "Gripe", "Espiros frequentes")
+        print(f'\n{nome}, use solução salina para aliviar a congestão.')
 
-def diagnosticar_imediato(sintomas_dengue, sintomas_COVID19):
+def diagnosticar_imediato(sintomas_dengue, sintomas_covid):
+    """Diagnóstico crítico quando >=5 sintomas."""
     if len(sintomas_dengue) >= 5:
-        return "Você apresenta vários sintomas de dengue. Procure um médico imediatamente, pode ser que você precise de tratamento."
-    elif len(sintomas_COVID19) >= 5:
-        return "Você apresenta vários sintomas de COVID-19. Procure um médico imediatamente. Você já tomou a vacina contra a COVID-19?"
+        return "Você apresenta vários sintomas de dengue. Procure um médico imediatamente."
+    if len(sintomas_covid) >= 5:
+        return "Você apresenta vários sintomas de COVID‑19. Procure um médico imediatamente."
     return None
 
+def verificar_suspeita(sintomas_dengue, sintomas_covid, nome) -> bool:
+    """Gera mensagem de suspeita a partir de 2 sintomas."""
+    if len(sintomas_dengue) == 3:
+        codigo = gerar_codigo_paciente()
+        consulta = proxima_consulta()
+        print(f"\n{name_msg(nome)} Suspeita de **dengue** detectada.")
+        print(f"Código do paciente: {codigo}")
+        print(f"Sua consulta com um infectologista foi agendada para {consulta:%d/%m/%Y às %H:%M}.")
+        return True
+    if len(sintomas_covid) == 3:
+        codigo = gerar_codigo_paciente()
+        consulta = proxima_consulta()
+        print(f"\n{name_msg(nome)} Suspeita de **COVID‑19** detectada.")
+        print(f"Código do paciente: {codigo}")
+        print(f"Sua consulta com um pneumologista foi agendada para {consulta:%d/%m/%Y às %H:%M}.")
+        return True
+    return False
+
+def name_msg(nome: str) -> str:
+    """Formata saudação personalizada."""
+    return f"{nome},"
+
+# ---------- FLUXO PRINCIPAL ----------
+
 def start():
-    # Apresentar o chatbot
-    print('Olá, eu sou MECIA, sua assistente médica.')
+    print("Olá, eu sou MECIA, sua assistente médica.")
+    nome = input("Digite seu nome: ")
 
-    # Pedir o nome
-    nome = input('Digite seu nome: ')
-
-    sintomas_dengue = []
-    sintomas_COVID19 = []
+    sintomas_dengue, sintomas_covid = [], []
+    suspeita_enviada = False
+    diagnostico = None
 
     while True:
-        # Pedir a pergunta
-        pergunta = input('Como está se sentindo: ')
+        pergunta = input("\nComo está se sentindo? ").lower().strip()
+        if not pergunta:
+            continue  # evita strings vazias
 
-        # Processar a pergunta e fornecer a resposta
-        processar_resposta(pergunta.lower(), nome, sintomas_dengue, sintomas_COVID19)
+        processar_resposta(pergunta, nome, sintomas_dengue, sintomas_covid)
 
-        # Diagnosticar imediatamente se necessário
-        diagnostico = diagnosticar_imediato(sintomas_dengue, sintomas_COVID19)
+        # Checa suspeita após adicionar o sintoma
+        if not suspeita_enviada:
+            suspeita_enviada = verificar_suspeita(sintomas_dengue, sintomas_covid, nome)
+
+        # Diagnóstico crítico
+        diagnostico = diagnosticar_imediato(sintomas_dengue, sintomas_covid)
         if diagnostico:
-            print(diagnostico)
+            print(f"\n{diagnostico}")
             break
 
-        # Verificar se deseja continuar ou obter um diagnóstico
-        continuar = input('Deseja continuar descrevendo sintomas? ').strip().lower()
-        if continuar != 'sim':
+        # Se já foi gerada suspeita ou diagnóstico, não continuar perguntando
+        if suspeita_enviada or diagnostico:
             break
 
-    # Diagnóstico final se não tiver diagnosticado antes
-    if not diagnostico:
-        print("Você parece estar com uns sintomas preculpante, mas continue monitorando seus sintomas e passe num clinico geral que ele ira recomendar uns exames e se for necessario um uso de medicamentos.")
+        continuar = input("\nDeseja continuar descrevendo sintomas (sim/não)? ").strip().lower()
+        if continuar != "sim":
+            break
+# Pergunta se o usuário quer continuar
 
-if __name__ == '__main__':
+    if not diagnostico and not suspeita_enviada:
+        print("\nVocê relatou poucos sintomas. Continue monitorando sua saúde e, se piorar, procure um médico.")
+
+        # Recomendação de remédio leve, se não houver suspeita, diagnóstico e poucos sintomas
+    if not suspeita_enviada and not diagnostico:
+        if len(sintomas_dengue) < 3 and len(sintomas_covid) < 3:
+            remedios = ["Benegrip", "Cimegripe", "Tylenol Sinus", "Vick Pyrena"]
+            recomendado = random.choice(remedios)
+            print(f"\n{nome}, seus sintomas parecem leves. Recomendamos que tome {recomendado} e continue monitorando sua saúde.")
+
+
+    print(f"\nObrigado por usar o MECIA, {nome}. Cuide‑se!")
+
+if __name__ == "__main__":
     start()
